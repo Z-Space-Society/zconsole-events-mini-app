@@ -15,6 +15,20 @@
       "when": 1767474403346,
       "tag": "0001_exotic_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782322668021,
+      "tag": "0002_slimy_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1782324341469,
+      "tag": "0003_omniscient_black_bolt",
+      "breakpoints": true
     }
   ]
 }

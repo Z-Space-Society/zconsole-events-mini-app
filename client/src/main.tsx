@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import './index.css'
+import './styles/events.css'
 import { router } from './routes'
 
 async function initializeApp() {

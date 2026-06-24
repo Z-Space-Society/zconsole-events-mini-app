@@ -1,6 +1,6 @@
 {
-  "name": "Local First Auth Starter",
-  "description": "A starter template for building Local First Auth mini apps",
+  "name": "Zconsole Events Mini App",
+  "description": "A Zconsole Events Mini App mini app",
   "icon": "./icon.webp",
   "type": "app",
   "permissions": [

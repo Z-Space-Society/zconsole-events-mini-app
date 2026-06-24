@@ -1,8 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { Onboarding } from 'local-first-auth/react'
 import { AuthProvider, useLocalFirstAuth } from './hooks/useLocalFirstAuth'
-import { QRCodePanel } from './components/QRCodePanel'
-import { Footer } from './components/Footer'
 
 function Layout() {
   const {
@@ -15,16 +13,11 @@ function Layout() {
     handleOnboardingComplete,
   } = useLocalFirstAuth()
 
-  // Loading state
+  // Loading state — shown on the paper backdrop so it blends into the device frame.
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gradient-start to-gradient-end">
-        <div className="grid md:grid-cols-2 min-h-screen">
-          <QRCodePanel />
-          <div className="flex items-center justify-center px-4">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-        </div>
+      <div className="ev-root">
+        <div className="ev-loading">Loading…</div>
       </div>
     )
   }
@@ -32,33 +25,20 @@ function Layout() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
-        <div className="grid md:grid-cols-2 min-h-screen">
-          <QRCodePanel />
-          <div className="flex items-center justify-center px-4">
-            <div className="text-center max-w-md">
-              <div className="text-6xl mb-6">⚠️</div>
-              <h1 className="text-3xl font-bold mb-4 text-gray-800">Error</h1>
-              <p className="text-gray-600">{error}</p>
-            </div>
-          </div>
+      <div className="ev-root">
+        <div className="text-center max-w-md px-6">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-semibold mb-2">Something went wrong</h1>
+          <p className="text-sm" style={{ color: 'var(--ink-2)' }}>{error}</p>
         </div>
       </div>
     )
   }
 
-  // Main layout with routes
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gradient-start to-gradient-end">
-      <div className="grid md:grid-cols-2 min-h-screen">
-        <QRCodePanel />
-        <div className="flex flex-col px-4 py-8">
-          <main>
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
-      </div>
+    <>
+      {/* The events app owns the full viewport (centered device frame). */}
+      <Outlet />
 
       {/* Onboarding modal */}
       {isOnboardingModalOpen && (
@@ -68,19 +48,16 @@ function Layout() {
             onClick={() => setIsOnboardingModalOpen(false)}
           />
           <div className="relative z-10 w-full max-w-lg mx-4 max-h-[90vh] overflow-auto rounded-2xl shadow-2xl">
-            <Onboarding
-              skipSocialStep={true}
-              onComplete={handleOnboardingComplete}
-            />
+            <Onboarding skipSocialStep={true} onComplete={handleOnboardingComplete} />
           </div>
         </div>
       )}
 
-      {/* Reset Modal */}
+      {/* Reset modal (admin broadcast) */}
       {resetMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div className="relative z-10 bg-card rounded-lg shadow-xl p-8 max-w-md mx-4 text-center">
+          <div className="relative z-10 bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Admin Reset</h2>
             <p className="text-gray-600">{resetMessage}</p>
             <button
@@ -92,9 +69,7 @@ function Layout() {
           </div>
         </div>
       )}
-
-      
-    </div>
+    </>
   )
 }
 
