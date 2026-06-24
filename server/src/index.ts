@@ -13,7 +13,17 @@ import { Broadcaster } from './durable-object'
 import { createDb } from './db/client'
 import * as UserModel from './db/models/users'
 import * as EventModel from './db/models/events'
-import { decodeAndVerifyJWT } from '@starter/shared'
+import {
+  decodeAndVerifyJWT,
+  partsOf,
+  whenText,
+  rangeText,
+  durationText,
+  venueLabel,
+  eventUrl,
+  eventLinkLabel,
+  urlHost,
+} from '@starter/shared'
 
 // Served under the /events subpath (Cloudflare route: console.z-space.ca/events/*),
 // so every route is mounted under /events.
@@ -226,6 +236,71 @@ app.get('/api/events', async (c) => {
     return c.json({ events })
   } catch (error) {
     console.error('Error fetching events:', error)
+    return c.json(
+      { error: 'Failed to fetch events', message: (error as Error).message },
+      500
+    )
+  }
+})
+
+/**
+ * Flatten a DB event row into a TouchDesigner-friendly record: all primitive
+ * fields with pre-formatted, civic-timezone date/time labels so a TD client can
+ * map it straight into a Table DAT without re-implementing the formatting logic.
+ */
+function toTouchDesignerEvent(e: EventModel.Event) {
+  const startISO = e.startsAt.toISOString()
+  const endISO = e.endsAt ? e.endsAt.toISOString() : null
+  const p = partsOf(startISO)
+  const url = eventUrl(e)
+  return {
+    uid: e.uid,
+    title: e.summary,
+    status: e.status,
+    description: e.description,
+    startISO,
+    endISO,
+    startUnix: Math.floor(e.startsAt.getTime() / 1000),
+    endUnix: e.endsAt ? Math.floor(e.endsAt.getTime() / 1000) : null,
+    date: p.key,
+    year: p.y,
+    month: p.monLong,
+    monthShort: p.monShort,
+    dayOfMonth: p.d,
+    dayOfWeek: p.dowLong,
+    dayOfWeekShort: p.dowShort,
+    startMinutes: p.minutes,
+    when: whenText(startISO, endISO),
+    timeRange: rangeText(startISO, endISO),
+    duration: durationText(startISO, endISO),
+    venue: venueLabel(e.location),
+    organizer: e.organizerName,
+    url,
+    urlLabel: eventLinkLabel(url),
+    urlHost: urlHost(url),
+  }
+}
+
+/**
+ * GET /api/events/touchdesigner - List all events (public) as a flat array of
+ * pre-formatted records for easy consumption in TouchDesigner.
+ *
+ * Same lazy-sync behaviour as /api/events, but returns a bare JSON array rather
+ * than the `{ events }` envelope.
+ */
+app.get('/api/events/touchdesigner', async (c) => {
+  try {
+    const db = createDb(c.env.DB)
+
+    const changed = await EventModel.syncEventsIfStale(db)
+    if (changed) {
+      await notifyDO(c, 'events-synced', {})
+    }
+
+    const events = await EventModel.getEvents(db)
+    return c.json(events.map(toTouchDesignerEvent))
+  } catch (error) {
+    console.error('Error fetching touchdesigner events:', error)
     return c.json(
       { error: 'Failed to fetch events', message: (error as Error).message },
       500
