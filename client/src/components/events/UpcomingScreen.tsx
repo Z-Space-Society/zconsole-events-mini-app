@@ -1,7 +1,6 @@
 import { Fragment } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { EventItem, EventsOutletContext } from './types'
-import { BookmarkButton } from './ui'
 import {
   durationText,
   meridiemLabel,
@@ -13,7 +12,7 @@ import {
 } from './utils'
 
 export function UpcomingScreen() {
-  const { events, onOpen, onToggleSave } = useOutletContext<EventsOutletContext>()
+  const { events, onOpen } = useOutletContext<EventsOutletContext>()
   const now = nowParts()
   const todayKey = now.key
 
@@ -70,7 +69,7 @@ export function UpcomingScreen() {
               rows.push(<NowLine key={`now-${key}`} now={now} />)
               nowInserted = true
             }
-            rows.push(<Row key={e.uid} event={e} isToday={isToday} nowMinutes={now.minutes} onOpen={onOpen} onToggleSave={onToggleSave} />)
+            rows.push(<Row key={e.uid} event={e} isToday={isToday} nowMinutes={now.minutes} onOpen={onOpen} />)
           })
           if (isToday && !nowInserted) rows.push(<NowLine key={`now-${key}`} now={now} />)
 
@@ -107,35 +106,25 @@ function Row({
   isToday,
   nowMinutes,
   onOpen,
-  onToggleSave,
 }: {
   event: EventItem
   isToday: boolean
   nowMinutes: number
   onOpen: (uid: string) => void
-  onToggleSave: (uid: string) => void
 }) {
   const sp = partsOf(event.startsAt)
   const endMinutes = event.endsAt ? partsOf(event.endsAt).minutes : sp.minutes
   const past = isToday && endMinutes <= nowMinutes
 
   return (
-    <div className={`row${event.saved ? ' saved' : ''}${past ? ' past' : ''}`}>
+    <div className={`row${past ? ' past' : ''}`}>
       <div className="timecol">
         <div className="t-start">{timeLabel(sp)}</div>
         <div className="t-mer">{meridiemLabel(sp)}</div>
       </div>
-      <span className="node" />
       <div className="card" onClick={() => onOpen(event.uid)}>
         <div className="card-top">
           <span className="where-label">{venueLabel(event.location)}</span>
-          <BookmarkButton
-            on={event.saved}
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggleSave(event.uid)
-            }}
-          />
         </div>
         <div className="card-title">{event.summary}</div>
         <div className="card-meta">

@@ -211,20 +211,18 @@ app.post('/api/reset', async (c) => {
  * GET /api/events - List all events (public).
  *
  * Lazily syncs from the external feed (throttled by TTL + content hash), then
- * returns every event enriched with the requesting user's `saved` flag when
- * `?did=` is supplied.
+ * returns every event ordered by start time.
  */
 app.get('/api/events', async (c) => {
   try {
     const db = createDb(c.env.DB)
-    const did = c.req.query('did')
 
     const changed = await EventModel.syncEventsIfStale(db)
     if (changed) {
       await notifyDO(c, 'events-synced', {})
     }
 
-    const events = await EventModel.getEventsWithMeta(db, did)
+    const events = await EventModel.getEvents(db)
     return c.json({ events })
   } catch (error) {
     console.error('Error fetching events:', error)
@@ -232,43 +230,6 @@ app.get('/api/events', async (c) => {
       { error: 'Failed to fetch events', message: (error as Error).message },
       500
     )
-  }
-})
-
-/**
- * Save / unsave an event for the requesting user.
- * Body: { profileJwt, uid }
- */
-async function handleSave(c: Context<{ Bindings: Env }>, on: boolean): Promise<Response> {
-  const body = await c.req.json()
-  const { profileJwt, uid } = body
-
-  if (!profileJwt) return c.json({ error: 'Missing profileJwt' }, 400)
-  if (!uid || typeof uid !== 'string') return c.json({ error: 'Missing uid' }, 400)
-
-  const payload = await decodeAndVerifyJWT(profileJwt)
-  const did = payload.iss
-
-  const db = createDb(c.env.DB)
-  await EventModel.setSave(db, uid, did, on)
-  return c.json({ success: true, uid, saved: on })
-}
-
-app.post('/api/events/save', async (c) => {
-  try {
-    return await handleSave(c, true)
-  } catch (error) {
-    console.error('Save event error:', error)
-    return c.json({ error: 'Failed to save event', message: (error as Error).message }, 500)
-  }
-})
-
-app.post('/api/events/unsave', async (c) => {
-  try {
-    return await handleSave(c, false)
-  } catch (error) {
-    console.error('Unsave event error:', error)
-    return c.json({ error: 'Failed to unsave event', message: (error as Error).message }, 500)
   }
 })
 

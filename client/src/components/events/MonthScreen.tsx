@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import type { EventItem, EventsOutletContext } from './types'
-import { BookmarkButton } from './ui'
 import { IconChevronLeft, IconChevronRight } from './ui'
 import {
   MONTH_NAMES,
@@ -18,7 +17,7 @@ import {
 const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export function MonthScreen() {
-  const { events, onOpen, onToggleSave } = useOutletContext<EventsOutletContext>()
+  const { events, onOpen } = useOutletContext<EventsOutletContext>()
   const navigate = useNavigate()
   const today = nowParts()
   const [viewY, setViewY] = useState(today.y)
@@ -154,7 +153,6 @@ export function MonthScreen() {
               selected={key === effectiveSel}
               events={dayMap.get(key)!}
               onOpen={onOpen}
-              onToggleSave={onToggleSave}
               registerRef={(el) => {
                 if (el) dayRefs.current.set(key, el)
                 else dayRefs.current.delete(key)
@@ -173,7 +171,6 @@ function MonthDayGroup({
   selected,
   events,
   onOpen,
-  onToggleSave,
   registerRef,
 }: {
   dayKey: string
@@ -181,7 +178,6 @@ function MonthDayGroup({
   selected: boolean
   events: EventItem[]
   onOpen: (uid: string) => void
-  onToggleSave: (uid: string) => void
   registerRef: (el: HTMLDivElement | null) => void
 }) {
   const [y, m, d] = dayKey.split('-').map(Number)
@@ -214,13 +210,6 @@ function MonthDayGroup({
                 <span>{rangeText(e.startsAt, e.endsAt)}</span>
               </div>
             </div>
-            <BookmarkButton
-              on={e.saved}
-              onClick={(ev) => {
-                ev.stopPropagation()
-                onToggleSave(e.uid)
-              }}
-            />
           </div>
         )
       })}

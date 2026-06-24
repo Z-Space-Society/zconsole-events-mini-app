@@ -14,7 +14,6 @@ interface Props {
   event: EventItem | null
   open: boolean
   onClose: () => void
-  onToggleSave: (uid: string) => void
 }
 
 /** Clean the iCal description down to the human-readable blurb (boilerplate removed). */
@@ -30,7 +29,7 @@ function aboutText(description: string | null): string {
     .trim()
 }
 
-export function EventDetail({ event, open, onClose, onToggleSave }: Props) {
+export function EventDetail({ event, open, onClose }: Props) {
   // Keep the element mounted (so the slide transition works) even with no event.
   const e = event
   const host = e?.organizerName || 'Z-Space'
@@ -38,8 +37,15 @@ export function EventDetail({ event, open, onClose, onToggleSave }: Props) {
   const link = e ? eventUrl(e) : null
 
   return (
-    <div className={`detail${open ? ' is-open' : ''}`}>
-      <div className="detail-scroll">
+    <div
+      className={`detail${open ? ' is-open' : ''}`}
+      onClick={(ev) => {
+        // On desktop the wrapper is the dim backdrop — click outside the card closes.
+        if (ev.target === ev.currentTarget) onClose()
+      }}
+    >
+      <div className="detail-card">
+        <div className="detail-scroll">
         <div className="hero">
           <div className="hero-actions">
             <button className="hero-btn" onClick={onClose} aria-label="Back">
@@ -117,12 +123,6 @@ export function EventDetail({ event, open, onClose, onToggleSave }: Props) {
 
       {e && (
         <div className="actionbar">
-          <button className={`btn btn-save${e.saved ? ' on' : ''}`} onClick={() => onToggleSave(e.uid)}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill={e.saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" />
-            </svg>
-            <span>{e.saved ? 'Saved' : 'Save'}</span>
-          </button>
           <button
             className="btn btn-primary"
             disabled={!link}
@@ -135,6 +135,7 @@ export function EventDetail({ event, open, onClose, onToggleSave }: Props) {
           </button>
         </div>
       )}
+      </div>
     </div>
   )
 }

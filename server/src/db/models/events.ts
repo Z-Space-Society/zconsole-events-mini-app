@@ -1,10 +1,10 @@
 /**
- * Event model - sync from the external Z-Space feed + per-user saved state.
+ * Event model - sync from the external Z-Space feed.
  */
 
-import { eq, and, asc, sql } from 'drizzle-orm'
+import { eq, asc, sql } from 'drizzle-orm'
 import type { Database } from '../client.js'
-import { events, eventSaves, appMeta, type Event } from '../schema.js'
+import { events, appMeta, type Event } from '../schema.js'
 
 // Re-export types
 export type { Event }
@@ -25,11 +25,6 @@ interface ExternalEvent {
   geo?: string
   organizer?: { name?: string; email?: string }
   status?: string
-}
-
-/** An event enriched with the requesting user's saved flag. */
-export interface EventWithMeta extends Event {
-  saved: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -160,36 +155,7 @@ export async function syncEventsIfStale(db: Database): Promise<boolean> {
 // queries
 // ---------------------------------------------------------------------------
 
-/**
- * Return all events ordered by start time, each enriched with the requesting
- * user's `saved` flag (when `did` is given).
- */
-export async function getEventsWithMeta(db: Database, did?: string): Promise<EventWithMeta[]> {
-  const allEvents = await db.select().from(events).orderBy(asc(events.startsAt))
-  if (allEvents.length === 0) return []
-
-  let savedSet = new Set<string>()
-  if (did) {
-    const saved = await db
-      .select({ uid: eventSaves.eventUid })
-      .from(eventSaves)
-      .where(eq(eventSaves.userDid, did))
-    savedSet = new Set(saved.map((r) => r.uid))
-  }
-
-  return allEvents.map((e) => ({ ...e, saved: savedSet.has(e.uid) }))
-}
-
-// ---------------------------------------------------------------------------
-// mutations
-// ---------------------------------------------------------------------------
-
-export async function setSave(db: Database, uid: string, did: string, on: boolean): Promise<void> {
-  if (on) {
-    await db.insert(eventSaves).values({ eventUid: uid, userDid: did }).onConflictDoNothing()
-  } else {
-    await db
-      .delete(eventSaves)
-      .where(and(eq(eventSaves.eventUid, uid), eq(eventSaves.userDid, did)))
-  }
+/** Return all events ordered by start time. */
+export async function getEvents(db: Database): Promise<Event[]> {
+  return db.select().from(events).orderBy(asc(events.startsAt))
 }

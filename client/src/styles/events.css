@@ -1,7 +1,7 @@
 /* =============================================================================
    Z-Space Events — design system ported from the mockup.
    Sage-stone palette, Spectral + Hanken Grotesk. Categories intentionally
-   removed; green (--accent) is reserved strictly for now / today / saved.
+   removed; green (--accent) is reserved strictly for now / today.
    ============================================================================= */
 
 :root {
@@ -31,41 +31,27 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Page backdrop + centered device frame */
+/* Mobile-first app shell — full viewport, no phone frame. The desktop layer
+   (min-width: 768px, further down) re-introduces a centered column + backdrop. */
 .ev-root {
   font-family: var(--sans);
   color: var(--ink);
-  min-height: 100svh;
+  height: 100svh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--backdrop);
-  background-image: radial-gradient(circle at 50% 0%, #e3e7df 0%, var(--backdrop) 60%);
+  flex-direction: column;
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
 }
 
 .device {
   position: relative;
-  width: min(412px, 100vw);
-  height: min(880px, 100svh);
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   background: var(--paper);
-  border-radius: 46px;
   overflow: hidden;
-  box-shadow: 0 50px 90px -30px rgba(27, 33, 28, 0.45), 0 0 0 10px #20251f, 0 0 0 11px #3a4138;
   display: flex;
   flex-direction: column;
-}
-
-@media (max-width: 480px) {
-  .ev-root {
-    background: var(--paper);
-  }
-  .device {
-    width: 100vw;
-    height: 100svh;
-    border-radius: 0;
-    box-shadow: none;
-  }
 }
 
 .app {
@@ -266,26 +252,8 @@
   bottom: auto;
   height: 26px;
 }
-.row .node {
-  position: absolute;
-  left: 55px;
-  top: 6px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--paper);
-  border: 1.5px solid var(--ink-3);
-  z-index: 2;
-}
-.row.saved .node {
-  background: var(--accent);
-  border-color: var(--accent);
-}
 .row.past {
   opacity: 0.5;
-}
-.row.past .node {
-  border-color: var(--line);
 }
 
 /* Cards */
@@ -388,33 +356,6 @@
   font-weight: 500;
 }
 
-.bookmark {
-  flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  color: var(--ink-3);
-  transition: background 0.2s, color 0.2s, transform 0.15s;
-}
-.bookmark:hover {
-  background: var(--surface-2);
-}
-.bookmark.on {
-  color: var(--accent);
-}
-.bookmark.on svg {
-  fill: var(--accent);
-}
-.bookmark:active {
-  transform: scale(0.85);
-}
-
 /* Now line */
 .nowline {
   position: relative;
@@ -498,63 +439,6 @@
   max-width: 210px;
   margin: 0 auto;
   color: var(--ink-2);
-}
-
-/* Saved cards */
-.scard {
-  display: flex;
-  gap: 13px;
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-card);
-  padding: 13px 14px;
-  margin-bottom: 11px;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: transform 0.18s;
-  align-items: stretch;
-}
-.scard:active {
-  transform: scale(0.99);
-}
-.scard.past {
-  opacity: 0.55;
-}
-.scard .when {
-  flex: 0 0 52px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  border-right: 1px solid var(--line-2);
-  padding-right: 13px;
-}
-.when .w-day {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.when .w-num {
-  font-family: var(--serif);
-  font-size: 23px;
-  font-weight: 500;
-  line-height: 1.1;
-}
-.when .w-mon {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.scard .sbody {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 /* Month calendar */
@@ -760,9 +644,6 @@
   flex-direction: column;
   justify-content: center;
 }
-.mcard .bookmark {
-  align-self: center;
-}
 .day-empty {
   padding: 22px 4px 8px;
   color: var(--ink-3);
@@ -792,9 +673,10 @@
   cursor: pointer;
 }
 
-/* Bottom nav */
+/* Bottom nav (mobile). Pulled out of the header flow to the viewport bottom;
+   the desktop layer re-docks it inline in the header. */
 .nav {
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
@@ -847,6 +729,15 @@
 }
 .detail.is-open {
   transform: none;
+}
+/* On mobile the card is a transparent passthrough filling the sheet; the desktop
+   layer turns it into a centered modal and .detail into a dim backdrop. */
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
 }
 .detail-scroll {
   flex: 1;
@@ -1062,14 +953,6 @@
 .btn:active {
   transform: scale(0.98);
 }
-.btn-save.on {
-  background: var(--accent-soft);
-  border-color: transparent;
-  color: var(--accent);
-}
-.btn-save.on svg {
-  fill: var(--accent);
-}
 .btn-primary {
   flex: 1.4;
   background: var(--ink);
@@ -1117,4 +1000,93 @@
   justify-content: center;
   color: var(--ink-3);
   font-size: 14px;
+}
+
+/* =============================================================================
+   Desktop layer — expand the mobile shell into a real responsive web layout.
+   Centered single column, nav docked in the header, detail as a centered modal.
+   ============================================================================= */
+@media (min-width: 768px) {
+  .ev-root {
+    background-image: radial-gradient(circle at 50% -10%, #e3e7df 0%, var(--paper) 60%);
+  }
+
+  /* Header becomes a centered row: brand left, tabs right. */
+  .topbar {
+    width: 100%;
+    max-width: 660px;
+    margin-inline: auto;
+    padding: 22px 24px 16px;
+  }
+
+  /* Nav re-docks inline in the header as a horizontal tab group. */
+  .nav {
+    position: static;
+    width: auto;
+    z-index: auto;
+    flex: 0 0 auto;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 0;
+    background: none;
+  }
+  .navbtn {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .navbtn:hover {
+    color: var(--ink);
+  }
+  .navbtn.is-on {
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .navbtn.is-on svg {
+    transform: none;
+  }
+
+  /* Content scrolls within a centered reading column. */
+  .screen {
+    max-width: 660px;
+    margin-inline: auto;
+    padding: 4px 24px 48px;
+  }
+
+  .toast {
+    bottom: 32px;
+  }
+
+  /* Detail: dim backdrop + centered modal card (no slide). */
+  .detail {
+    position: fixed;
+    background: rgba(20, 24, 20, 0.45);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    transform: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s;
+  }
+  .detail.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .detail-card {
+    width: min(520px, 100%);
+    height: auto;
+    max-height: min(720px, 90svh);
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--paper);
+    box-shadow: 0 40px 80px -30px rgba(27, 33, 28, 0.5);
+  }
 }
