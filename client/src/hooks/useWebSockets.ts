@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { wsUrl } from '../lib/api'
 
 interface UseWebSocketsOptions {
   userId: string | undefined
@@ -13,9 +14,7 @@ export function useWebSockets({ userId, isAdmin, onReset }: UseWebSocketsOptions
   useEffect(() => {
     if (!userId) return
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const wsUrl = `${protocol}//${window.location.host}/api/ws`
-    const ws = new WebSocket(wsUrl)
+    const ws = new WebSocket(wsUrl('/api/ws'))
     wsRef.current = ws
 
     ws.onmessage = (event) => {

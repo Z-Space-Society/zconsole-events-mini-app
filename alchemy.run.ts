@@ -59,6 +59,9 @@ export const worker = await Worker('worker', {
   assets: {
     html_handling: 'auto-trailing-slash',
     not_found_handling: 'single-page-application',
+    // API/WebSocket paths must reach the Worker; everything else (the nested
+    // /events build) is served as a static asset.
+    run_worker_first: ['/events/api/*'],
   },
   url: true,
 })

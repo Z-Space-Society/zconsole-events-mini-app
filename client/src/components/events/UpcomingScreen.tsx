@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
-import type { EventItem } from './types'
+import { useOutletContext } from 'react-router-dom'
+import type { EventItem, EventsOutletContext } from './types'
 import { BookmarkButton } from './ui'
 import {
   durationText,
@@ -11,13 +12,8 @@ import {
   venueLabel,
 } from './utils'
 
-interface Props {
-  events: EventItem[]
-  onOpen: (uid: string) => void
-  onToggleSave: (uid: string) => void
-}
-
-export function UpcomingScreen({ events, onOpen, onToggleSave }: Props) {
+export function UpcomingScreen() {
+  const { events, onOpen, onToggleSave } = useOutletContext<EventsOutletContext>()
   const now = nowParts()
   const todayKey = now.key
 

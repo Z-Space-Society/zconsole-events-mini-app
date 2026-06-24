@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import type { EventItem } from './types'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+import type { EventItem, EventsOutletContext } from './types'
 import { BookmarkButton } from './ui'
 import { IconChevronLeft, IconChevronRight } from './ui'
 import {
@@ -14,16 +15,11 @@ import {
   venueLabel,
 } from './utils'
 
-interface Props {
-  events: EventItem[]
-  onOpen: (uid: string) => void
-  onToggleSave: (uid: string) => void
-  onGoUpcoming: () => void
-}
-
 const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-export function MonthScreen({ events, onOpen, onToggleSave, onGoUpcoming }: Props) {
+export function MonthScreen() {
+  const { events, onOpen, onToggleSave } = useOutletContext<EventsOutletContext>()
+  const navigate = useNavigate()
   const today = nowParts()
   const [viewY, setViewY] = useState(today.y)
   const [viewM, setViewM] = useState(today.mo - 1) // 0-indexed
@@ -146,7 +142,7 @@ export function MonthScreen({ events, onOpen, onToggleSave, onGoUpcoming }: Prop
       {dayMap.size === 0 ? (
         <div className="month-empty">
           <p>No events on the calendar this month. Some months are quieter than others — see what's coming up next.</p>
-          <button onClick={onGoUpcoming}>View upcoming →</button>
+          <button onClick={() => navigate('/')}>View upcoming →</button>
         </div>
       ) : (
         <div className="month-list">

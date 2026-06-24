@@ -1,12 +1,9 @@
-import type { EventItem } from './types'
+import { useOutletContext } from 'react-router-dom'
+import type { EventItem, EventsOutletContext } from './types'
 import { nowParts, partsOf, rangeText, venueLabel } from './utils'
 
-interface Props {
-  events: EventItem[]
-  onOpen: (uid: string) => void
-}
-
-export function SavedScreen({ events, onOpen }: Props) {
+export function SavedScreen() {
+  const { events, onOpen } = useOutletContext<EventsOutletContext>()
   const now = nowParts()
   const todayKey = now.key
 

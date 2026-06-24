@@ -4,15 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/events/',
   plugins: [react(), tailwindcss()],
+  build: {
+    outDir: 'dist/events', // assets served at /events/assets/... by Cloudflare
+  },
   server: {
     port: 5173,
     strictPort: true, // Fail if port is busy instead of incrementing
     proxy: {
-      '/api': {
+      '/events/api': {
         target: 'http://localhost:8787',
         changeOrigin: true,
-        ws: true, // Enable WebSocket proxying for /api/ws
+        ws: true, // Enable WebSocket proxying for /events/api/ws
       },
     },
   },

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiUrl } from '../lib/api'
 
 interface AdminSectionProps {
   getProfileJwt: () => Promise<string | undefined>
@@ -23,7 +24,7 @@ export function AdminSection({ getProfileJwt, onReset }: AdminSectionProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/reset', {
+      const response = await fetch(apiUrl('/api/reset'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profileJwt, message }),

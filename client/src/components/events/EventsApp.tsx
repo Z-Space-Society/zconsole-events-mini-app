@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet } from 'react-router-dom'
 import { useEvents } from './useEvents'
-import { UpcomingScreen } from './UpcomingScreen'
-import { MonthScreen } from './MonthScreen'
-import { SavedScreen } from './SavedScreen'
 import { EventDetail } from './EventDetail'
 import { IconBookmark, IconCalendar, IconList } from './ui'
-
-type Screen = 'feed' | 'month' | 'saved'
+import type { EventsOutletContext } from './types'
 
 export function EventsApp() {
-  const [screen, setScreen] = useState<Screen>('feed')
   const [openUid, setOpenUid] = useState<string | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
@@ -32,6 +28,8 @@ export function EventsApp() {
   }, [])
   const closeDetail = useCallback(() => setDetailOpen(false), [])
 
+  const navClass = ({ isActive }: { isActive: boolean }) => `navbtn${isActive ? ' is-on' : ''}`
+
   return (
     <div className="ev-root">
       <div className="device">
@@ -46,25 +44,14 @@ export function EventsApp() {
           </div>
 
           <div className="screens">
-            <section className={`screen${screen === 'feed' ? ' is-active' : ''}`}>
+            <section className="screen is-active">
               {loading ? (
                 <div className="ev-loading">Loading events…</div>
               ) : (
-                <UpcomingScreen events={events} onOpen={openDetail} onToggleSave={toggleSave} />
-              )}
-            </section>
-            <section className={`screen${screen === 'month' ? ' is-active' : ''}`}>
-              {!loading && (
-                <MonthScreen
-                  events={events}
-                  onOpen={openDetail}
-                  onToggleSave={toggleSave}
-                  onGoUpcoming={() => setScreen('feed')}
+                <Outlet
+                  context={{ events, onOpen: openDetail, onToggleSave: toggleSave } satisfies EventsOutletContext}
                 />
               )}
-            </section>
-            <section className={`screen${screen === 'saved' ? ' is-active' : ''}`}>
-              {!loading && <SavedScreen events={events} onOpen={openDetail} />}
             </section>
           </div>
 
@@ -78,18 +65,18 @@ export function EventsApp() {
           <div className={`toast${toastMsg ? ' show' : ''}`}>{toastMsg}</div>
 
           <nav className="nav">
-            <button className={`navbtn${screen === 'feed' ? ' is-on' : ''}`} onClick={() => setScreen('feed')}>
+            <NavLink to="/" end className={navClass}>
               <IconList />
               Upcoming
-            </button>
-            <button className={`navbtn${screen === 'month' ? ' is-on' : ''}`} onClick={() => setScreen('month')}>
+            </NavLink>
+            <NavLink to="/month" className={navClass}>
               <IconCalendar />
               This month
-            </button>
-            <button className={`navbtn${screen === 'saved' ? ' is-on' : ''}`} onClick={() => setScreen('saved')}>
+            </NavLink>
+            <NavLink to="/saved" className={navClass}>
               <IconBookmark />
               Saved
-            </button>
+            </NavLink>
           </nav>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocalFirstAuth } from '../../hooks/useLocalFirstAuth'
+import { apiUrl, wsUrl } from '../../lib/api'
 import type { EventItem } from './types'
 
 /**
@@ -16,7 +17,7 @@ export function useEvents(notify: (msg: string) => void) {
   const refetch = useCallback(async () => {
     try {
       const qs = did ? `?did=${encodeURIComponent(did)}` : ''
-      const res = await fetch(`/api/events${qs}`)
+      const res = await fetch(apiUrl(`/api/events${qs}`))
       if (!res.ok) throw new Error(`events ${res.status}`)
       const data = (await res.json()) as { events: EventItem[] }
       setEvents(data.events)
@@ -36,8 +37,7 @@ export function useEvents(notify: (msg: string) => void) {
   const refetchRef = useRef(refetch)
   refetchRef.current = refetch
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const ws = new WebSocket(`${protocol}//${window.location.host}/api/ws`)
+    const ws = new WebSocket(wsUrl('/api/ws'))
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data)
@@ -71,7 +71,7 @@ export function useEvents(notify: (msg: string) => void) {
       patch(uid, (e) => ({ ...e, saved: on }))
       notify(on ? 'Saved to your list' : 'Removed from saved')
       try {
-        const res = await fetch(`/api/events/${on ? 'save' : 'unsave'}`, {
+        const res = await fetch(apiUrl(`/api/events/${on ? 'save' : 'unsave'}`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ profileJwt: jwt, uid }),

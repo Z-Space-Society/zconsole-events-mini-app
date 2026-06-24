@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { decodeAndVerifyJWT } from '@starter/shared'
 import { useWebSockets } from './useWebSockets'
 import { injectLocalFirstAuthAPI, hasProfile as hasStoredProfile } from 'local-first-auth'
+import { apiUrl } from '../lib/api'
 
 // TypeScript declarations for Local First Auth API
 declare global {
@@ -63,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const addUserToDatabase = async (profileJwt: string): Promise<User> => {
-    const response = await fetch('/api/add-user', {
+    const response = await fetch(apiUrl('/api/add-user'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ profileJwt }),
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const addAvatarToDatabase = async (avatarJwt: string) => {
     try {
-      const response = await fetch('/api/add-avatar', {
+      const response = await fetch(apiUrl('/api/add-avatar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatarJwt }),

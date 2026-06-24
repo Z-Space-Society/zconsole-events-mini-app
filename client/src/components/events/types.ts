@@ -13,3 +13,10 @@ export interface EventItem {
   status: string | null
   saved: boolean
 }
+
+/** Shared data/callbacks passed from the EventsApp layout to each screen route. */
+export interface EventsOutletContext {
+  events: EventItem[]
+  onOpen: (uid: string) => void
+  onToggleSave: (uid: string) => void
+}

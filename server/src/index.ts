@@ -15,7 +15,9 @@ import * as UserModel from './db/models/users'
 import * as EventModel from './db/models/events'
 import { decodeAndVerifyJWT } from '@starter/shared'
 
-const app = new Hono<{ Bindings: Env }>()
+// Served under the /events subpath (Cloudflare route: console.z-space.ca/events/*),
+// so every route is mounted under /events.
+const app = new Hono<{ Bindings: Env }>().basePath('/events')
 
 // Enable CORS for all requests
 app.use('/*', cors({
