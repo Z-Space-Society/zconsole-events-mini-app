@@ -28,6 +28,7 @@ export const events = sqliteTable('events', {
   organizerEmail: text('organizer_email'),
   lumaUrl: text('luma_url'), // parsed from description
   status: text('status'),
+  source: text('source').notNull().default('feed'), // 'feed' (synced) or 'manual' (admin-added)
   contentHash: text('content_hash'), // per-event hash to skip no-op updates
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 }, (table) => [

@@ -3,6 +3,7 @@ import { App } from '../app'
 import { EventsApp } from '../components/events/EventsApp'
 import { UpcomingScreen } from '../components/events/UpcomingScreen'
 import { MonthScreen } from '../components/events/MonthScreen'
+import { NewUser } from './new-user'
 import { NotFound } from './not-found'
 
 export const router = createBrowserRouter(
@@ -18,6 +19,7 @@ export const router = createBrowserRouter(
             { path: 'month', element: <MonthScreen /> },
           ],
         },
+        { path: 'new-user', element: <NewUser /> },
         { path: '*', element: <NotFound /> },
       ],
     },

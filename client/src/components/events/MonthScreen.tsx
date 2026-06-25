@@ -202,6 +202,7 @@ function MonthDayGroup({
             <div className="m-body">
               <div className="where-label" style={{ marginBottom: 6 }}>
                 {venueLabel(e.location)}
+                {e.source === 'manual' && <span className="ev-badge" style={{ marginLeft: 8 }}>Private</span>}
               </div>
               <div className="card-title" style={{ margin: 0, fontSize: 16 }}>
                 {e.summary}

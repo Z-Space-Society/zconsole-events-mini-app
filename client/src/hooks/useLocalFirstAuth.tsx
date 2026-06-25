@@ -132,9 +132,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Handler for when onboarding completes - now window.localFirstAuth is available
+  // Handler for when onboarding completes. In a host/simulator environment
+  // window.localFirstAuth is already present; in a plain browser the freshly
+  // created profile lives in localStorage, so inject the API from it first.
   const handleOnboardingComplete = useCallback(() => {
     setIsOnboardingModalOpen(false)
+    if (!window.localFirstAuth && hasStoredProfile()) {
+      injectLocalFirstAuthAPI()
+    }
     loadUser()
     loadAvatar()
   }, [loadUser, loadAvatar])

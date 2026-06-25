@@ -13,6 +13,7 @@ import { Broadcaster } from './durable-object'
 import { createDb } from './db/client'
 import * as UserModel from './db/models/users'
 import * as EventModel from './db/models/events'
+import { parseLumaInput, fetchLumaEvent } from './lib/luma'
 import {
   decodeAndVerifyJWT,
   partsOf,
@@ -212,6 +213,95 @@ app.post('/api/reset', async (c) => {
     console.error('Reset error:', error)
     return c.json(
       { error: 'Failed to reset', message: (error as Error).message },
+      500
+    )
+  }
+})
+
+/**
+ * POST /api/events/add - Add a private/manual Luma event (admin only).
+ * Accepts { profileJwt, url }, fetches details from Luma, and upserts the event.
+ */
+app.post('/api/events/add', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { profileJwt, url } = body
+
+    if (!profileJwt) {
+      return c.json({ error: 'Missing profileJwt' }, 400)
+    }
+    if (!url || typeof url !== 'string') {
+      return c.json({ error: 'Missing or invalid url' }, 400)
+    }
+
+    // Verify JWT and confirm the user is an admin.
+    const payload = await decodeAndVerifyJWT(profileJwt)
+    const did = payload.iss
+    const db = createDb(c.env.DB)
+    if (!(await UserModel.isUserAdmin(db, did))) {
+      return c.json({ error: 'Unauthorized: Admin access required' }, 403)
+    }
+
+    // Parse + fetch from Luma (user-facing errors → 400).
+    let parsedInput
+    try {
+      parsedInput = parseLumaInput(url)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 400)
+    }
+
+    let lumaEvent
+    try {
+      lumaEvent = await fetchLumaEvent(parsedInput)
+    } catch (err) {
+      return c.json({ error: (err as Error).message }, 400)
+    }
+
+    const event = await EventModel.addManualEvent(db, lumaEvent)
+    await notifyDO(c, 'events-synced', {})
+
+    return c.json({ event })
+  } catch (error) {
+    console.error('Add event error:', error)
+    return c.json(
+      { error: 'Failed to add event', message: (error as Error).message },
+      500
+    )
+  }
+})
+
+/**
+ * DELETE /api/events/:uid - Remove a manually-added event (admin only).
+ * Only manual events can be removed; feed-synced events are protected.
+ */
+app.delete('/api/events/:uid', async (c) => {
+  try {
+    const uid = c.req.param('uid')
+    const body = await c.req.json().catch(() => ({}))
+    const { profileJwt } = body as { profileJwt?: string }
+
+    if (!profileJwt) {
+      return c.json({ error: 'Missing profileJwt' }, 400)
+    }
+
+    const payload = await decodeAndVerifyJWT(profileJwt)
+    const did = payload.iss
+    const db = createDb(c.env.DB)
+    if (!(await UserModel.isUserAdmin(db, did))) {
+      return c.json({ error: 'Unauthorized: Admin access required' }, 403)
+    }
+
+    const removed = await EventModel.deleteManualEvent(db, uid)
+    if (!removed) {
+      return c.json({ error: 'No manually-added event found with that id' }, 404)
+    }
+
+    await notifyDO(c, 'events-synced', {})
+    return c.json({ success: true, uid })
+  } catch (error) {
+    console.error('Remove event error:', error)
+    return c.json(
+      { error: 'Failed to remove event', message: (error as Error).message },
       500
     )
   }

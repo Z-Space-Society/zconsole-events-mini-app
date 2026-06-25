@@ -125,6 +125,7 @@ function Row({
       <div className="card" onClick={() => onOpen(event.uid)}>
         <div className="card-top">
           <span className="where-label">{venueLabel(event.location)}</span>
+          {event.source === 'manual' && <span className="ev-badge">Private</span>}
         </div>
         <div className="card-title">{event.summary}</div>
         <div className="card-meta">

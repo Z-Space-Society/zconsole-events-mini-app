@@ -11,6 +11,7 @@ export interface EventItem {
   organizerEmail: string | null
   lumaUrl: string | null
   status: string | null
+  source: string
 }
 
 /** Shared data/callbacks passed from the EventsApp layout to each screen route. */

@@ -152,6 +152,82 @@ export async function syncEventsIfStale(db: Database): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
+// manual (admin-added) events
+// ---------------------------------------------------------------------------
+
+/** Fields for a manually-added event (e.g. a private Luma event). */
+export interface ManualEventInput {
+  uid: string
+  summary: string
+  description: string | null
+  startsAt: Date
+  endsAt: Date | null
+  location: string | null
+  geo: string | null
+  organizerName: string | null
+  lumaUrl: string | null
+  status: string | null
+}
+
+/**
+ * Insert or update a manually-added event. Keyed on uid (the Luma event api id),
+ * so re-adding the same URL updates the existing row instead of duplicating.
+ */
+export async function addManualEvent(db: Database, input: ManualEventInput): Promise<Event> {
+  const row = {
+    uid: input.uid,
+    summary: input.summary,
+    description: input.description,
+    startsAt: input.startsAt,
+    endsAt: input.endsAt,
+    location: input.location,
+    geo: input.geo,
+    organizerName: input.organizerName,
+    organizerEmail: null,
+    lumaUrl: input.lumaUrl,
+    status: input.status,
+    source: 'manual' as const,
+  }
+  const contentHash = await sha256(JSON.stringify(row))
+
+  const [event] = await db
+    .insert(events)
+    .values({ ...row, contentHash, updatedAt: new Date() })
+    .onConflictDoUpdate({
+      target: events.uid,
+      set: {
+        summary: sql`excluded.summary`,
+        description: sql`excluded.description`,
+        startsAt: sql`excluded.starts_at`,
+        endsAt: sql`excluded.ends_at`,
+        location: sql`excluded.location`,
+        geo: sql`excluded.geo`,
+        organizerName: sql`excluded.organizer_name`,
+        lumaUrl: sql`excluded.luma_url`,
+        status: sql`excluded.status`,
+        source: sql`excluded.source`,
+        contentHash: sql`excluded.content_hash`,
+        updatedAt: sql`excluded.updated_at`,
+      },
+    })
+    .returning()
+
+  return event
+}
+
+/**
+ * Delete a manually-added event by uid. Only removes rows where source = 'manual'
+ * so feed-synced events can never be deleted. Returns true when a row was removed.
+ */
+export async function deleteManualEvent(db: Database, uid: string): Promise<boolean> {
+  const deleted = await db
+    .delete(events)
+    .where(sql`${events.uid} = ${uid} and ${events.source} = 'manual'`)
+    .returning({ uid: events.uid })
+  return deleted.length > 0
+}
+
+// ---------------------------------------------------------------------------
 // queries
 // ---------------------------------------------------------------------------
 

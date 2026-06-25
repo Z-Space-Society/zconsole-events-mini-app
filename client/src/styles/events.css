@@ -1089,4 +1089,218 @@
     background: var(--paper);
     box-shadow: 0 40px 80px -30px rgba(27, 33, 28, 0.5);
   }
+  .admin {
+    background: rgba(27, 33, 28, 0.32);
+    backdrop-filter: blur(2px);
+    align-items: center;
+    justify-content: center;
+    transform: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .admin.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .admin-card {
+    width: min(520px, 100%);
+    height: auto;
+    max-height: min(720px, 90svh);
+    border-radius: 24px;
+    box-shadow: 0 40px 80px -30px rgba(27, 33, 28, 0.5);
+  }
+}
+
+/* Admin gear button (topbar, admins only) */
+.admin-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s, color 0.2s;
+}
+.admin-btn:hover {
+  color: var(--ink);
+}
+.admin-btn:active {
+  transform: scale(0.92);
+}
+
+/* "Private" marker on manually-added event cards */
+.ev-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+/* Admin panel overlay (mobile: full-height sheet; desktop: centered modal) */
+.admin {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+}
+.admin.is-open {
+  transform: none;
+}
+.admin-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  background: var(--paper);
+}
+.admin-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--line-2);
+}
+.admin-head h2 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+}
+.admin-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 22px 28px;
+}
+.admin-scroll::-webkit-scrollbar {
+  width: 0;
+}
+.admin-sec {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+.admin-sec:last-child {
+  border-bottom: none;
+}
+.admin-sec h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+}
+.admin-hint {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.admin-input {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.admin-input:focus {
+  border-color: var(--accent);
+}
+.admin-add {
+  margin-top: 12px;
+  width: 100%;
+}
+.admin-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #9a3b3b;
+  background: #f6e3e3;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.admin-notice {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.admin-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-card);
+  padding: 12px 14px;
+}
+.admin-item-main {
+  min-width: 0;
+  flex: 1;
+}
+.admin-item-title {
+  font-family: var(--serif);
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.admin-item-sub {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 4px;
+}
+.admin-remove {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #9a3b3b;
+  background: transparent;
+  border: 1px solid #e6cfcf;
+  border-radius: 999px;
+  padding: 7px 13px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.admin-remove:hover {
+  background: #f6e3e3;
+}
+.admin-remove:active {
+  transform: scale(0.95);
+}
+.admin-remove[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
 }
