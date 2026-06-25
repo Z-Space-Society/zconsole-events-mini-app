@@ -441,6 +441,17 @@ app.get('/api', (c) => {
   return c.text('😁')
 })
 
+/**
+ * SPA fallback: serve the client shell for any non-API navigation request so
+ * deep links like /events/month load correctly. Cloudflare's asset
+ * `not_found_handling` would otherwise serve the wrong root index.html.
+ */
+app.get('*', async (c) => {
+  const url = new URL(c.req.url)
+  url.pathname = '/events/index.html'
+  return c.env.ASSETS.fetch(new Request(url))
+})
+
 // Export Durable Object
 export { Broadcaster }
 

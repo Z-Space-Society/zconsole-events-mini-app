@@ -58,9 +58,9 @@ export const worker = await Worker('worker', {
   },
   assets: {
     html_handling: 'auto-trailing-slash',
-    not_found_handling: 'single-page-application',
-    // API/WebSocket paths must reach the Worker; everything else (the nested
-    // /events build) is served as a static asset.
+    // API/WebSocket paths must reach the Worker first. Other asset misses
+    // (e.g. deep links like /events/month) fall through to the Worker, which
+    // serves the correct /events/index.html shell (see server/src/index.ts).
     run_worker_first: ['/events/api/*'],
   },
   url: true,

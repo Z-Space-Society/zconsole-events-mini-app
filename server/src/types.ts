@@ -7,4 +7,7 @@ export interface Env {
 
   // Durable Object namespace for real-time WebSocket broadcasting
   DURABLE_OBJECT: DurableObjectNamespace
+
+  // Static assets binding (client build); used to serve the SPA shell
+  ASSETS: Fetcher
 }
