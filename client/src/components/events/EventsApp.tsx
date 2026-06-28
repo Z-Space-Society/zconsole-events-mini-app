@@ -4,6 +4,7 @@ import { useEvents } from './useEvents'
 import { EventDetail } from './EventDetail'
 import { AdminPanel } from './AdminPanel'
 import { IconCalendar, IconList } from './ui'
+import { Footer } from '../Footer'
 import { useLocalFirstAuth } from '../../hooks/useLocalFirstAuth'
 import type { EventsOutletContext } from './types'
 
@@ -70,6 +71,7 @@ export function EventsApp() {
                   context={{ events, onOpen: openDetail } satisfies EventsOutletContext}
                 />
               )}
+              <Footer />
             </section>
           </div>
 

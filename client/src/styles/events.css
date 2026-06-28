@@ -134,7 +134,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 22px 120px;
+  padding: 4px 22px 24px;
   opacity: 0;
   visibility: hidden;
   transform: translateY(8px);

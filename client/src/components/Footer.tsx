@@ -1,12 +1,13 @@
 export function Footer() {
   return (
-    <div className="mt-4 text-center text-sm text-gray-500">
-      This app is an {' '}
+    <div className="mt-4 mb-4 pb-4 text-center text-sm" style={{ color: 'var(--ink-3)' }}>
+      This is an {' '}
       <a
-        href="https://github.com/antler-browser/mini-app-starter"
+        href="https://github.com/Z-Space-Society/zconsole-events-mini-app"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-rose-700 hover:text-rose-800 underline"
+        className="underline"
+        style={{ color: 'var(--accent)' }}
       >
         open source
       </a>
