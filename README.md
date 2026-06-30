@@ -1,118 +1,96 @@
-# Mini App Starter
+# ZConsole Events Mini App
 
-## Overview
+A real-time events mini app for [Z-Space](https://z-space.ca) (Gastown, Vancouver). It syncs the community event feed automatically and lets admins add private Luma events that aren't in the feed.
 
-This repo is a starter template to help you easily build and self-host your own mini apps for your in-person events, social clubs, game nights, etc.
+## What it does
 
-### Key Benefits
-- **Signup/Login built-in** - You don't have to write any auth code. 
-- **Simple full-stack app ready to go** - REST API, SQLite database, and real-time updates via WebSocket, are already set up, so you can focus on building your app.
-- **Examples** - We provide examples of mini apps that you can use as a reference, so you don't have to start from scratch. See [`docs/mini-app-examples.md`](./docs/mini-app-examples.md).
-- **Free Hosting** - Easily deploy to Cloudflare. We use Cloudflare because their free tier is more than enough for multiple mini apps.
+- **Upcoming view** — events from today forward, grouped by date, with a live "now" indicator and a **Private** badge on manually-added events.
+- **This-month view** — a calendar grid with per-day event dots and a detail list for the selected day.
+- **Event detail** — a slide-out panel with host, time and duration, location, a cleaned-up description, and an **RSVP** link to the Luma event page.
+- **Auto-sync** — pulls from the Z-Space events feed (`https://zeevents.z-space.workers.dev/events`) on demand, throttled to once per 5 minutes and only writing when the feed content actually changes.
+- **Admin tools** — add a private Luma event by pasting its URL, remove manually-added events, and reset non-admin users.
+- **TouchDesigner endpoint** — `GET /api/events/touchdesigner` returns flattened JSON with pre-formatted date/time labels for installations and displays.
+- **Real-time updates** — clients receive live updates over WebSocket as events sync and users join/leave.
 
-## Getting Started
+Feed-synced events are read-only; only manually-added (`source: 'manual'`) events can be removed.
 
-### 1. Get a visual mockup of the app you want to build.
+## Screens
 
-For example, open up [claude.ai](https://claude.ai) and use the **frontend-design skill** to create a visual mockup of the app you want to build.
+| Screen | Route | Notes |
+|--------|-------|-------|
+| Upcoming | `/` | Events from today forward, grouped by date |
+| This month | `/month` | Calendar grid with day detail list |
+| Event detail | — | Slide-out panel, opened from either screen |
+| Admin panel | — | Slide-out, visible only to admins |
 
-Here is an example prompt for creating a scavenger hunt mini app for my coworking space:
-```
-Use the frontend design skill, I want to create a scavenger hunt mini app. This is for my coworking space, all 16 members will be given a QR code and asked to hide it somewhere in the space. We should show a leaderboard that displays everyone that has found a QR code. Our goal with the app is to have people at the coworking space have fun by looking around to find the hidden QR codes. 
+## Running locally
 
-Focus on the UI/visual design, not the app logic. Focus on mobile-first design. Use placeholder data, mock profiles and avatars and mock states if needed. Skip signup/auth screens entirely. Skip QR scanning screens, we are going to use native camera app. 
-
-Before designing, ask me questions to clarify what I want to build.
-```
-
-### 2. Create your own copy of this repo and install dependencies.
-
-Click the "Use this template" button -> "Create a new repository" to create a new repo for your app.
-
-Then follow these steps below to download the repo locally and install dependencies.
+This project uses pnpm. If you don't have it: `brew install pnpm`.
 
 ```bash
-git clone https://github.com/your-username/your-app-name.git your-app-name
-cd your-app-name
-pnpm install  # Install dependencies
-pnpm setup-project  # setup your app name inside wrangler.toml, alchemy.run.ts (See docs/project-setup.md)
+pnpm install
+pnpm db:run-migrations    # initialize / run migrations on the local D1 database
+pnpm dev                  # start the dev server
+pnpm dev:simulator        # or start with a simulated test user (no QR scan needed)
 ```
 
-This project uses pnpm as the package manager, if you don't have it installed, you can install it with `brew install pnpm`.
+## Admin setup
 
-### 3. Create a technical implementation of your app based on the mockup.
+Admins are users with `isAdmin = true` in the database. To promote yourself, complete the onboarding flow at `/new-user` to get your DID (with a copy button), then set the flag for that DID. See [docs/admin-setup.md](./docs/admin-setup.md) for full instructions.
 
-Open up Claude Code or a similar tool to create a technical implementation. Here is an example prompt for creating a technical implementation of the scavenger hunt mini app:
-```
-Create a technical implementation of the app based on this mockup: [[Attach mockup]]
+## Deploying
 
-Here are some key points to consider: [[Taken from conversation that created the mockup above]].
+Deployment uses [Alchemy](https://alchemy.run) to deploy to Cloudflare Workers.
 
-**Core Mechanics:**
-- Each member hides their own QR code somewhere in the space
-- Members scan codes with native camera app
-- Finding your own code doesn't count toward your score (max 15 points)
-
-**Design Direction:**
-- Playful + minimal aesthetic
-
-**Screens Built:**
-- Home/Leaderboard — Main focus is the ranked leaderboard; personal progress card at top
-- User Detail — Tap any user to see which of the 16 QR codes they've found or not found (organized by who hid it)
-
-**Excluded:**
-- No time limit
-- No prizes
-- No activity feed
-- No easter eggs/achievements
-
-The mockup may mock profiles and avatars, for our implementation, we are using the 'local-first-auth' library to handle signup and authentication, so users will have a profile and avatar after they complete the onboarding flow.
-
-Look up examples of other mini apps inside `docs/mini-app-examples.md` to see if you can learn anything from them, bring them into your implementation.
-
-Lastly, I need some admin features to set up scavenger hunt.
-
-Ask me questions if you need to clarify anything.
-```
-
-### 4. Run database migrations.
 ```bash
-pnpm db:run-migrations    # Initialize / run migrations on local D1 database
+pnpm alchemy configure          # configure a Cloudflare API token (see Alchemy CLI docs)
 ```
 
-### 5. Test your app locally.
-```bash
-pnpm dev                  # Start development server
-pnpm dev:simulator        # or start development server with a test user account
-```
+Copy `.env.example` to `.env` and set `ALCHEMY_STATE_TOKEN` (used to store deployment state in a remote state store). Then:
 
-### 6. Deploy your app to Cloudflare.
-
-We use the Alchemy to easily deploy to Cloudflare. If you don't have it installed, you can install it with `brew install alchemy`.
-
-Configure a Cloudflare API token to use with Alchemy (see [Alchemy CLI Documentation](https://alchemy.run/docs/cli/configuration)):
-```bash
-pnpm alchemy configure
-```
-
-Copy `.env.example` to `.env` and update `ALCHEMY_STATE_TOKEN`. This is used to store the state of the deployment in a remote state store.
-
-To deploy the app:
 ```bash
 pnpm run deploy:cloudflare
 ```
 
-Yay! You've deployed your app. If you ran into any issues or have any feedback, create an issue in this repo so we understand what we can improve. Thanks!
+Database migrations are applied automatically by `alchemy.run.ts` on deploy.
 
-## Project Structure
+## API reference
 
-This is a monorepo with three packages:
-- `client/` - React frontend
-- `server/` - Cloudflare Workers, D1 (SQLite), Durable Objects
-- `shared/` - Shared utilities (JWT verification)
+All endpoints are served under `/api`.
 
-## Documentation
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/events` | List events (syncs from the feed if stale) | Public |
+| `GET` | `/api/events/touchdesigner` | Flattened event JSON for TouchDesigner | Public |
+| `POST` | `/api/events/add` | Add a private Luma event by URL | Admin |
+| `DELETE` | `/api/events/:uid` | Remove a manually-added event | Admin |
+| `POST` | `/api/reset` | Clear non-admin users + broadcast a message | Admin |
+| `POST` | `/api/add-user` | Add or update a user profile | JWT |
+| `POST` | `/api/add-avatar` | Add or update a user avatar | JWT |
+| `DELETE` | `/api/remove-user` | Remove the current user | JWT |
+| `GET` | `/api/users` | List all users | Public |
+| `GET` | `/api/ws` | WebSocket connection for real-time updates | Public |
+| `GET` | `/api` | Health check | Public |
 
-- [CLAUDE.md](./CLAUDE.md) - Development guide for Claude Code
-- [Local First Auth Specification](./docs/local-first-auth-spec.md) - Local First Auth Specification used for authentication
-- [Mini App Examples](./docs/mini-app-examples.md) - Examples of mini apps that you can use as a reference
+## Built on the mini-app starter
+
+This app is built on a mini-app starter template that bundles authentication and a full-stack setup so you can focus on the app itself:
+
+- **Signup/login built-in** via [Local First Auth](./docs/local-first-auth-spec.md) — no passwords, email, or auth code to write.
+- **Full-stack out of the box** — REST API, SQLite (Cloudflare D1) database, and real-time updates over WebSocket (Cloudflare Durable Objects).
+- **Free hosting** — Cloudflare's free tier comfortably covers multiple mini apps.
+
+### Project structure
+
+This is a pnpm workspace monorepo with three packages:
+
+- `client/` — React frontend
+- `server/` — Cloudflare Workers, D1 (SQLite), Durable Objects
+- `shared/` — Shared utilities (JWT verification)
+
+### Documentation
+
+- [CLAUDE.md](./CLAUDE.md) — development guide (architecture, commands, database, deployment)
+- [Local First Auth Specification](./docs/local-first-auth-spec.md) — auth spec used for signup/login
+- [Admin setup](./docs/admin-setup.md) — how to grant admin access
+- [Mini App Examples](./docs/mini-app-examples.md) — reference examples of other mini apps
